@@ -14,9 +14,9 @@ BIN_DIR=bin
 SRCS=$(wildcard $(SRC_DIR)/*.cpp)
 PROTOS=$(wildcard $(SRC_DIR)/*.proto)
 
-OBJS=$(addprefix $(OBJ_DIR)/, $(notdir $(SRCS:.cpp=.o)))
-OBJS+=$(addprefix $(OBJ_DIR)/, $(notdir $(PROTOS:.proto=.pb.o)))
+OBJS=$(addprefix $(OBJ_DIR)/, $(notdir $(PROTOS:.proto=.pb.o)))
 OBJS+=$(addprefix $(OBJ_DIR)/, $(notdir $(PROTOS:.proto=.grpc.pb.o)))
+OBJS+=$(addprefix $(OBJ_DIR)/, $(notdir $(SRCS:.cpp=.o)))
 
 STUB_C+=$(addprefix $(STUB_DIR)/, $(notdir $(PROTOS:.proto=.pb.cc)))
 STUB_C+=$(addprefix $(STUB_DIR)/, $(notdir $(PROTOS:.proto=.grpc.pb.cc)))
@@ -29,7 +29,6 @@ override CFLAGS+=\
 	-g\
 	-std=c++11\
 	-fPIC\
-	-pthread\
 
 override LFLAGS+=\
 
@@ -42,8 +41,11 @@ LIBDIRS=\
 	-L$(GRPC_INSTALL_DIR)/lib\
 
 LIBS=\
+	-lrt\
+	-lreadline\
 	-lprotobuf\
 	-lpthread\
+	-lgrpc\
 	-lgrpc++\
 
 all: $(BIN_DIR)/$(TARGET)
@@ -56,7 +58,7 @@ $(OBJ_DIR)/%.pb.o: $(STUB_DIR)/%.pb.cc
 	@[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
 	$(CC) $(INCLUDES) $(CFLAGS) -o $@ -c $<
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(STUB_H)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CC) $(INCLUDES) $(CFLAGS) -o $@ -c $<
 
 .PRECIOUS: $(STUB_DIR)/%.grpc.pb.cc
