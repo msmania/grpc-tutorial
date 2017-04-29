@@ -9,7 +9,7 @@ TARGET=t
 SRC_DIR=.
 OBJ_DIR=obj
 STUB_DIR=stub
-BIN_DIR=bin
+BIN_DIR=../bin
 
 SRCS=$(wildcard $(SRC_DIR)/*.cpp)
 PROTOS=$(wildcard $(SRC_DIR)/*.proto)
