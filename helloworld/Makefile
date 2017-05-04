@@ -43,6 +43,7 @@ LIBDIRS=\
 LIBS=\
 	-lprotobuf\
 	-lpthread\
+	-lgrpc\
 	-lgrpc++\
 
 all: $(BIN_DIR)/$(TARGET)
