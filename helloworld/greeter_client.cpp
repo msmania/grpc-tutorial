@@ -65,17 +65,29 @@ class GreeterClient {
     // the server and/or tweak certain RPC behaviors.
     ClientContext context;
 
+    auto deadline = std::chrono::system_clock::now()
+                    + std::chrono::seconds(5);
+    context.set_deadline(deadline);
+
     // The actual RPC.
     Status status = stub_->SayHello(&context, request, &reply);
 
     // Act upon its status.
-    if (status.ok()) {
-      return reply.message();
-    } else {
+    std::string message_returned;
+    switch (status.error_code()) {
+    case grpc::StatusCode::OK:
+      message_returned = reply.message();
+      break;
+    case grpc::StatusCode::DEADLINE_EXCEEDED:
+      message_returned = "Server is busy.";
+      break;
+    default:
       std::cout << status.error_code() << ": " << status.error_message()
                 << std::endl;
-      return "RPC failed";
+      message_returned = "RPC failed";
+      break;
     }
+    return message_returned;
   }
 
  private:
