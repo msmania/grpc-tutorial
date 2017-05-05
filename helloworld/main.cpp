@@ -3,6 +3,8 @@
 
 void RunClient(const char *endpoint);
 void RunServer(const char *endpoint);
+void RunAsyncClient(const char *endpoint);
+void RunAsyncServer(const char *endpoint);
 
 int main(int argc, char *argv[]) {
   if (getenv("SILENT")) {
@@ -24,6 +26,12 @@ int main(int argc, char *argv[]) {
     }
     else if (strcmp(argv[1], "-s") == 0) {
       RunServer(endpoint);
+    }
+    else if (strcmp(argv[1], "-ac") == 0) {
+      RunAsyncClient(endpoint);
+    }
+    else if (strcmp(argv[1], "-as") == 0) {
+      RunAsyncServer(endpoint);
     }
   }
   return 0;
