@@ -62,6 +62,11 @@ void RunServer(const char *endpoint) {
   GreeterServiceImpl service;
 
   ServerBuilder builder;
+  builder.SetSyncServerOption(ServerBuilder::SyncServerOption::NUM_CQS, 1);
+  builder.SetSyncServerOption(ServerBuilder::SyncServerOption::MIN_POLLERS, 1);
+  builder.SetSyncServerOption(ServerBuilder::SyncServerOption::MAX_POLLERS, 1);
+  builder.SetSyncServerOption(ServerBuilder::SyncServerOption::CQ_TIMEOUT_MSEC, 20000);
+
   // Listen on the given address without any authentication mechanism.
   builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
   // Register "service" as the instance through which we'll communicate with
