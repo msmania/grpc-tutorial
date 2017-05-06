@@ -56,7 +56,7 @@ class GreeterClient {
 
   // Assembles the client's payload, sends it and presents the response back
   // from the server.
-  std::string SayHello(const std::string& user) {
+  std::string SayHello(const std::string& user, int timeout_ms) {
     // Data we are sending to the server.
     HelloRequest request;
     request.set_name(user);
@@ -67,6 +67,10 @@ class GreeterClient {
     // Context for the client. It could be used to convey extra information to
     // the server and/or tweak certain RPC behaviors.
     ClientContext context;
+
+    auto deadline = std::chrono::system_clock::now()
+                    + std::chrono::milliseconds(timeout_ms);
+    context.set_deadline(deadline);
 
     // The producer-consumer queue we use to communicate asynchronously with the
     // gRPC runtime.
@@ -99,12 +103,20 @@ class GreeterClient {
     // corresponds solely to the request for updates introduced by Finish().
     GPR_ASSERT(ok);
 
-    // Act upon the status of the actual RPC.
-    if (status.ok()) {
-      return reply.message();
-    } else {
-      return "RPC failed";
+    // Act upon its status.
+    std::string message_returned;
+    switch (status.error_code()) {
+    case grpc::StatusCode::OK:
+      message_returned = reply.message();
+      break;
+    case grpc::StatusCode::DEADLINE_EXCEEDED:
+      message_returned = "Server is busy.";
+      break;
+    default:
+      message_returned = "RPC failed";
+      break;
     }
+    return message_returned;
   }
 
  private:
@@ -113,7 +125,7 @@ class GreeterClient {
   std::unique_ptr<Greeter::Stub> stub_;
 };
 
-void RunAsyncClient(const char *endpoint) {
+void RunAsyncClient(const char *endpoint, int timeout_ms) {
   std::string destination(endpoint ? endpoint : "localhost:50051");
   // Instantiate the client. It requires a channel, out of which the actual RPCs
   // are created. This channel models a connection to an endpoint (in this case,
@@ -122,6 +134,6 @@ void RunAsyncClient(const char *endpoint) {
   GreeterClient greeter(grpc::CreateChannel(
       destination, grpc::InsecureChannelCredentials()));
   std::string user("world");
-  std::string reply = greeter.SayHello(user);  // The actual RPC call!
+  std::string reply = greeter.SayHello(user, timeout_ms);  // The actual RPC call!
   std::cout << "Greeter received: " << reply << std::endl;
 }

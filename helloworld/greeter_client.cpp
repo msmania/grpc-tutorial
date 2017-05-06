@@ -53,7 +53,7 @@ class GreeterClient {
 
   // Assembles the client's payload, sends it and presents the response back
   // from the server.
-  std::string SayHello(const std::string& user) {
+  std::string SayHello(const std::string& user, int timeout_ms) {
     // Data we are sending to the server.
     HelloRequest request;
     request.set_name(user);
@@ -66,7 +66,7 @@ class GreeterClient {
     ClientContext context;
 
     auto deadline = std::chrono::system_clock::now()
-                    + std::chrono::seconds(5);
+                    + std::chrono::milliseconds(timeout_ms);
     context.set_deadline(deadline);
 
     // The actual RPC.
@@ -94,7 +94,7 @@ class GreeterClient {
   std::unique_ptr<Greeter::Stub> stub_;
 };
 
-void RunClient(const char *endpoint) {
+void RunClient(const char *endpoint, int timeout_ms) {
   std::string destination(endpoint ? endpoint : "localhost:50051");
   // Instantiate the client. It requires a channel, out of which the actual RPCs
   // are created. This channel models a connection to an endpoint (in this case,
@@ -103,6 +103,6 @@ void RunClient(const char *endpoint) {
   GreeterClient greeter(grpc::CreateChannel(
       destination, grpc::InsecureChannelCredentials()));
   std::string user("world");
-  std::string reply = greeter.SayHello(user);
+  std::string reply = greeter.SayHello(user, timeout_ms);
   std::cout << "Greeter received: " << reply << std::endl;
 }
